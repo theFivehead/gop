@@ -9,14 +9,18 @@ from multiprocessing import Process, cpu_count
 soubor_prvocislo_n=""
 soubor_prvocislo_u="prvocisla.txt"
 testovat_prvociselnost=True
-cisla=[]
+cisla=[]       #neoverene prvocisla
+prvocisla=[]   #overena prvocisla
+
 #prepinace
+cislo_algoritmu=1
 generovat_prv=False     #prepinac -g
 ulozit_do_souboru=False #prepinac -u
 nacist_ze_souboru=""    #prepinac -n="cesta ke souboru"
 
 def help():
-    print("-g pro generování prvočísel\n-u ulozit_do_souboru\n-n=""cesta ke souboru""\n--help zobrazí tento text")
+    print("gop.py [cislo algoritmu] 1-atkinovoSito 2-millerRabin 3-postupneDeleni"
+          "\n-g pro generování prvočísel\n-u ulozit_do_souboru\n-n=""cesta ke souboru""\n--help zobrazí tento text")
     sys.exit()
 
 #funkce ktera nacte cisla ze souboru a vráti pole s int
@@ -30,7 +34,7 @@ def nacteni_cisel_soubor(nacteni_lokace):
     soubor.close()
     return cisla
 
-def ulozeni_prvocisel_soubor(prvocisla,soubor_cesta="ulozena_prvocisla"):
+def ulozeni_prvocisel_soubor(prvocisla,soubor_cesta="ulozena_prvocisla.txt"):
     soubor=open(soubor_cesta, "w")
     for prvocislo in prvocisla:
         soubor.write(str(prvocislo)+"\n")
@@ -77,26 +81,56 @@ def postupneDeleni():
 if len(sys.argv) <= 1:
     print("zadne hodnoty nebyly zadany")
 else:
-    for i in range(1,len(sys.argv)):
-        if sys.argv[i].find("-") != -1:
-            if sys.argv[i].find("--help") != -1:
-                help()
-            if sys.argv[i].find("u") != -1:
-                print("prvocisla se ulozi do souboru")
-                ulozit_do_souboru=True
-            if sys.argv[i].find("g")  != -1:
-                print("prvocisla se budou generovat")
-                generovat_prv=True
-            if sys.argv[i].find("n=")  != -1:
-                soubor_prvocislo_n=sys.argv[i][sys.argv[i].find("=")+1:]
-                print("prvocisla se nactou ze souboru:"+soubor_prvocislo_n)
-        elif sys.argv[i].isdigit():
-            cisla.append(int(sys.argv[i]))
+    if sys.argv[1].isdigit():
+        cislo_algoritmu=int(sys.argv[1])
+        if cislo_algoritmu not in range(1,4):
+            help()
+        for i in range(2,len(sys.argv)):
+            if sys.argv[i].find("-") != -1:
+                if sys.argv[i].find("--help") != -1:
+                    help()
+                if sys.argv[i].find("u") != -1:
+                    print("prvocisla se ulozi do souboru")
+                    ulozit_do_souboru=True
+                if sys.argv[i].find("g")  != -1:
+                    print("prvocisla se budou generovat")
+                    generovat_prv=True
+                if sys.argv[i].find("n=")  != -1:
+                    soubor_prvocislo_n=sys.argv[i][sys.argv[i].find("=")+1:]
+                    print("prvocisla se nactou ze souboru:"+soubor_prvocislo_n)
+                    cisla=nacteni_cisel_soubor(soubor_prvocislo_n)
+            elif sys.argv[i].isdigit():
+                cisla.append(int(sys.argv[i]))
+    else:
+        help()
+if not cisla:
+    print("suss")
+    help()
 
-if soubor_prvocislo_n != "":
-    cisla=nacteni_cisel_soubor(soubor_prvocislo_n)
+
+if generovat_prv: #dodelat zde se budou generovat prvocisla do daneho cisla pomoci zvoleneho algoritmu
+    match cislo_algoritmu:
+        case 1:
+            atkinovoSito()
+        case 2:
+            millerRabin()
+        case 3:
+            postupneDeleni()
+else:       #a zde se pouze overi jestli se jedna o prvocisla zase pomoci zvoleneho algoritmu
+    match cislo_algoritmu:
+        case 1:
+            atkinovoSito()
+        case 2:
+            millerRabin()
+        case 3:
+            postupneDeleni()
 
 
-
+#ulozi nebo vytiskne na obrazovku dle toho co si uzivatel zvoli
+if ulozit_do_souboru:
+    ulozeni_prvocisel_soubor(prvocisla)
+else:
+    for prvocislo in prvocisla:
+        print(prvocislo)
 print(cisla)
 
