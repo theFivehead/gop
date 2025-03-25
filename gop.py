@@ -2,11 +2,22 @@ import time
 import itertools
 import timeit
 import math
+import sys
 from multiprocessing import Process, cpu_count
 
 #definovani promennych --------------------------------------------------------------------------
-soubor_prvocislo="prvocisla.txt"
+soubor_prvocislo_n=""
+soubor_prvocislo_u="prvocisla.txt"
 testovat_prvociselnost=True
+cisla=[]
+#prepinace
+generovat_prv=False     #prepinac -g
+ulozit_do_souboru=False #prepinac -u
+nacist_ze_souboru=""    #prepinac -n="cesta ke souboru"
+
+def help():
+    print("-g pro generování prvočísel\n-u ulozit_do_souboru\n-n=""cesta ke souboru""\n--help zobrazí tento text")
+    sys.exit()
 
 #funkce ktera nacte cisla ze souboru a vráti pole s int
 def nacteni_cisel_soubor(nacteni_lokace):
@@ -62,10 +73,30 @@ def postupneDeleni():
     pass
 
 
+#nacteni hodnot z prikazove radky --------------------------------------------------------------------------
+if len(sys.argv) <= 1:
+    print("zadne hodnoty nebyly zadany")
+else:
+    for i in range(1,len(sys.argv)):
+        if sys.argv[i].find("-") != -1:
+            if sys.argv[i].find("--help") != -1:
+                help()
+            if sys.argv[i].find("u") != -1:
+                print("prvocisla se ulozi do souboru")
+                ulozit_do_souboru=True
+            if sys.argv[i].find("g")  != -1:
+                print("prvocisla se budou generovat")
+                generovat_prv=True
+            if sys.argv[i].find("n=")  != -1:
+                soubor_prvocislo_n=sys.argv[i][sys.argv[i].find("=")+1:]
+                print("prvocisla se nactou ze souboru:"+soubor_prvocislo_n)
+        elif sys.argv[i].isdigit():
+            cisla.append(int(sys.argv[i]))
+
+if soubor_prvocislo_n != "":
+    cisla=nacteni_cisel_soubor(soubor_prvocislo_n)
 
 
-print("chcete otestova prvocislo")
 
-test=nacteni_cisel_soubor(soubor_prvocislo)
-#print(test)
-ulozeni_prvocisel_soubor(test)
+print(cisla)
+
