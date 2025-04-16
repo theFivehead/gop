@@ -5,6 +5,7 @@ import itertools
 import timeit
 import math
 import sys
+from curses.ascii import isblank
 from multiprocessing import Process, cpu_count
 
 #definovani promennych --------------------------------------------------------------------------
@@ -13,6 +14,9 @@ soubor_prvocislo_u="prvocisla.txt"
 testovat_prvociselnost=True
 cisla=[]       #neoverene prvocisla
 prvocisla=[]   #overena prvocisla
+cas_Z=0
+cas_K=0
+algoritmus=("atkinovoSito","millerRabin","postupneDeleni")
 
 #prepinace
 cislo_algoritmu=1
@@ -150,15 +154,21 @@ else:
     else:
         help()
 if not cisla:
+    print("suss")
     help()
 
-'''
+cas_Z=time.time()
 if generovat_prv: #dodelat zde se budou generovat prvocisla do daneho cisla pomoci zvoleneho algoritmu
     match cislo_algoritmu:
         case 1:
             atkinovoSito()
         case 2:
-            millerRabin()
+            for cislo in cisla:
+                i=2
+                while i<=cislo:
+                    if millerRabin(i):
+                        prvocisla.append(i)
+                    i+=1
         case 3:
             postupneDeleni()
 else:       #a zde se pouze overi jestli se jedna o prvocisla zase pomoci zvoleneho algoritmu
@@ -166,12 +176,13 @@ else:       #a zde se pouze overi jestli se jedna o prvocisla zase pomoci zvolen
         case 1:
             atkinovoSito()
         case 2:
-            millerRabin()
+            for cislo in cisla:
+                if millerRabin(cislo):
+                    prvocisla.append(cislo)
         case 3:
             postupneDeleni()
-'''
-
-print(millerRabin(37335331319118115113110111753))
+cas_K = time.time() - cas_Z
+print("generovani prvocisel trvalo:"+str(cas_K)+"s")
 
 #ulozi nebo vytiskne na obrazovku dle toho co si uzivatel zvoli
 if ulozit_do_souboru:
@@ -179,5 +190,17 @@ if ulozit_do_souboru:
 else:
     for prvocislo in prvocisla:
         print(prvocislo)
-print(cisla)
+if not prvocisla and not generovat_prv:
+    print("žádné z čísel není prvočíslo")
+print(prvocisla)
 
+#ulozi cas genrovani prvocisel do souboru
+CIFRY=10
+with open("./prvocisla_cas.log", "a",encoding='utf-8') as time_log:
+    operace= "generování" if generovat_prv else "ověřování"
+    datum=time.strftime("%H-%M-%S--%d/%m/%Y")
+    prvocislo=max(prvocisla)
+    if len(str(abs(int(prvocislo)))) >= CIFRY:
+        time_log.write(f"datum: {datum} čas: {cas_K:.5f} prvočíslo: {prvocislo:.{CIFRY}e} operace: {operace} algoritmus: {algoritmus[cislo_algoritmu-1]}\n")
+    else:
+        time_log.write(f"datum: {datum} čas: {cas_K:.5f} prvočíslo: {prvocislo} operace: {operace} algoritmus: {algoritmus[cislo_algoritmu-1]}\n")
