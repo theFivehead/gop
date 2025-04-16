@@ -1,3 +1,5 @@
+from random import random, randrange
+
 import time
 import itertools
 import timeit
@@ -40,8 +42,46 @@ def ulozeni_prvocisel_soubor(prvocisla,soubor_cesta="ulozena_prvocisla.txt"):
         soubor.write(str(prvocislo)+"\n")
     soubor.close()
 
-def atkinovoSito():
-    pass
+def atkinovoSito(strop):
+    # Vypsání známých prvočísel 2 a 3, pokud to limit dovoluje
+    result = []
+    if strop > 2:
+        result.append(2)
+    if strop > 3:
+        result.append(3)
+
+    # Inicializace pole pro označení čísel, zda jsou kandidáty na prvočísla
+    # Používáme seznam o velikosti limit+1, abychom mohli indexovat až do limit
+    sieve = [False] * (strop + 1)
+
+    # Sběr pomocí podmínek dle Atkinova algoritmu
+    for x in range(1, int(math.sqrt(strop)) + 1):
+        for y in range(1, int(math.sqrt(strop)) + 1):
+            # Podmínka jedna: n = 4*x*x + y*y, n mod 12 == 1 nebo 5
+            n = 4 * x * x + y * y
+            if n <= strop and (n % 12 == 1 or n % 12 == 5):
+                sieve[n] = not sieve[n]
+            # Podmínka dva: n = 3*x*x + y*y, n mod 12 == 7
+            n = 3 * x * x + y * y
+            if n <= strop and n % 12 == 7:
+                sieve[n] = not sieve[n]
+            # Podmínka tři: n = 3*x*x - y*y, x > y, n mod 12 == 11
+            n = 3 * x * x - y * y
+            if x > y and n <= strop and n % 12 == 11:
+                sieve[n] = not sieve[n]
+
+    # Zrušení všech násobků čtverců (ty nejsou prvočísla)
+    for r in range(5, int(math.sqrt(strop)) + 1):
+        if sieve[r]:
+            for i in range(r * r, strop + 1, r * r):
+                sieve[i] = False
+
+    # Sběr prvočísel z vyznačeného pole
+    for a in range(5, strop):
+        if sieve[a]:
+            result.append(a)
+
+    return result
 
 def millerRabin(n):
     a=()
@@ -67,15 +107,21 @@ def millerRabin(n):
         a = (2, 3, 5, 7, 11, 13, 17)
     elif n < 3317044064679887385961981:
         a = (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41)
+    else:
+        a=tuple(randrange(2, 5) for _ in range(100))
     d=int((n-1)/2)
     for i in range(len(a)):
-        p=pow(a[0],d,n)
+        p=pow(a[i],d,n)
         if p!=1 and p-n!=-1:
             return False
     return True
-def postupneDeleni():
-    pass
-
+def postupneDeleni(n):
+    hranice=int(math.sqrt(n))+1
+    for i in range(2,int(hranice),1):
+        print(i)
+        if n%i==0:
+            return False
+    return True
 
 #nacteni hodnot z prikazove radky --------------------------------------------------------------------------
 if len(sys.argv) <= 1:
@@ -104,10 +150,9 @@ else:
     else:
         help()
 if not cisla:
-    print("suss")
     help()
 
-
+'''
 if generovat_prv: #dodelat zde se budou generovat prvocisla do daneho cisla pomoci zvoleneho algoritmu
     match cislo_algoritmu:
         case 1:
@@ -124,7 +169,9 @@ else:       #a zde se pouze overi jestli se jedna o prvocisla zase pomoci zvolen
             millerRabin()
         case 3:
             postupneDeleni()
+'''
 
+print(millerRabin(37335331319118115113110111753))
 
 #ulozi nebo vytiskne na obrazovku dle toho co si uzivatel zvoli
 if ulozit_do_souboru:
