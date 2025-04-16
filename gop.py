@@ -106,7 +106,6 @@ def atkinovoSito(strop):
     for a in range(5, strop):
         if sieve[a]:
             p.append(a)
-    print(p)
     return p
 
 
@@ -221,8 +220,9 @@ else:       #a zde se pouze overi jestli se jedna o prvocisla zase pomoci zvolen
         case 1:
             for cislo in cisla:
                 seznam = atkinovoSito(cislo+1)
-                if cislo == seznam[len(seznam)-1]:
-                    prvocisla.append(cislo)
+                if seznam:
+                    if cislo == seznam[len(seznam)-1]:
+                        prvocisla.append(cislo)
         case 2:
             for cislo in cisla:
                 if millerRabin(cislo):
