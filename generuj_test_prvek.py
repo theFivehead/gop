@@ -14,16 +14,7 @@ while n < target:
     n *= step
 
 # Save to file
-with open("numbers.txt", "w") as f:
+with open("cisla_test.txt", "w") as f:
     for number in numbers:
         f.write(f"{number}\n")
 
-# Plotting
-plt.figure(figsize=(10, 6))
-plt.plot(range(len(numbers)), numbers)
-plt.title("Generated Numbers with Increasing Spacing")
-plt.xlabel("Index")
-plt.ylabel("Value")
-plt.grid(True)
-plt.tight_layout()
-plt.show()
