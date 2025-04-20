@@ -31,6 +31,7 @@ debug = open("udalosti.log","a")
 def zapis_debug(text):
     stext=str(text)
     debug.write(time.strftime("%H-%M-%S--%d/%m/%Y")+":"+stext+"\n")
+    debug.flush()
 
 
 def help():
@@ -231,9 +232,10 @@ else:       #a zde se pouze overi jestli se jedna o prvocisla zase pomoci zvolen
             for cislo in cisla:
                 if postupneDeleni(cislo):
                     prvocisla.append(cislo)
-cas_K = (time.perf_counter() - cas_Z) * 1_000_000
+cas_K = (time.perf_counter() - cas_Z) * 1000
 
-gen_hlaska=f"{"generovani" if generovat_prv else "overovani"} trvalo:{cas_K:.2f}ms"
+x="generovani" if generovat_prv else "overovani"
+gen_hlaska=f"{x} trvalo:{cas_K:.2f}ms"
 print(gen_hlaska)
 zapis_debug(gen_hlaska)
 
