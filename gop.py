@@ -1,13 +1,7 @@
-import datetime
-from contextlib import nullcontext
-from random import random, randrange
-
-import time
-import itertools
-import timeit
 import math
 import sys
-from multiprocessing import Process, cpu_count
+import time
+from random import randrange
 
 #definovani promennych --------------------------------------------------------------------------
 soubor_prvocislo_n=""
@@ -27,30 +21,37 @@ nacist_ze_souboru=""    #prepinac -n="cesta ke souboru"
 
 #otevre soubor pro debugerr
 debug = open("udalosti.log","a")
-
+#zapise do logu textovou zpravu
 def zapis_debug(text):
     stext=str(text)
     debug.write(time.strftime("%H-%M-%S--%d/%m/%Y")+":"+stext+"\n")
     debug.flush()
 
-
+ #zobrazi napovedu
 def help():
-    print("gop.py [cislo algoritmu] 1-atkinovoSito 2-millerRabin 3-postupneDeleni"
-          "\n-g pro generování prvočísel\n-u ulozit_do_souboru\n-n=""cesta ke souboru""\n--help zobrazí tento text")
+    print("gop.py [cislo algoritmu]  "
+          "[prvočíslo nebo -n=""'cesta ke souboru'""]\n"
+          "-g pro generování prvočísel\n-u ulozit_do_souboru\n--help zobrazí tento text\n"
+          "1 - atkinovoSito\n2 - millerRabin\n3 - postupneDeleni")
     sys.exit()
 
 #funkce ktera nacte cisla ze souboru a vráti pole s int
 def nacteni_cisel_soubor(nacteni_lokace):
     zapis_debug("nacitam cisla ze souboru:"+nacteni_lokace)
-    soubor=open(nacteni_lokace, "r")
-    nactena_data=soubor.read().split("\n")
-    cisla=[0]
-    for potencialni_cislo in nactena_data:
-        if potencialni_cislo.isdigit():
-            cisla.append(int(potencialni_cislo))
-    soubor.close()
-    zapis_debug("nactena cisla:"+str(cisla))
-    return cisla
+    try:
+        soubor=open(nacteni_lokace, "r")
+        nactena_data=soubor.read().split("\n")
+        cisla=[0]
+        #zjisti jestli se jedna o prirozene cislo
+        for potencialni_cislo in nactena_data:
+            if potencialni_cislo.isdigit():
+                cisla.append(int(potencialni_cislo))
+        soubor.close()
+        zapis_debug("nactena cisla:"+str(cisla))
+        return cisla
+    except FileNotFoundError:
+        print("zadaly jste neexistující soubor")
+        sys.exit()
 
 def ulozeni_prvocisel_soubor(prvocisla,soubor_cesta="ulozena_prvocisla.txt"):
     soubor=open(soubor_cesta, "w")
@@ -109,10 +110,11 @@ def atkinovoSito(strop):
             p.append(a)
     return p
 
-
+#jedna se o deterministickou verzi algoritmu
 def millerRabin(n):
     if(n<1):
         return False
+    #nacte testovaci cisla tzv. svedky
     a=()
     if n < 2047:
         a = (2,)
@@ -136,16 +138,18 @@ def millerRabin(n):
         a = (2, 3, 5, 7, 11, 13, 17)
     elif n < 3317044064679887385961981:
         a = (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41)
-    else:
+    else:#pokud presahne posledni deterministicke cislo prepne se na nahodny
         a=tuple(randrange(2, 5) for _ in range(100))
     d=int((n-1)/2)
+    #otestuje zda se jedna o prvocisla
     for i in range(len(a)):
         p=pow(a[i],d,n)
         if p!=1 and p-n!=-1:
             return False
     return True
+#pokud cisla i do odmocniny cisla n jsou delitelne nejedna se o prvocislo
 def postupneDeleni(n):
-    if(n<1):
+    if n<1:
         return False
     hranice=int(math.sqrt(n))+1
     for i in range(2,int(hranice),1):
@@ -155,13 +159,13 @@ def postupneDeleni(n):
 
 #nacteni hodnot z prikazove radky --------------------------------------------------------------------------
 
-if len(sys.argv) <= 1:
+if len(sys.argv) <= 1:#kontrola poctu argumentu
     print("zadne hodnoty nebyly zadany")
     zapis_debug("zadne hodnoty nebyly zadany")
 else:
     if sys.argv[1].isdigit():
         cislo_algoritmu=int(sys.argv[1])
-        if cislo_algoritmu not in range(1,4):
+        if cislo_algoritmu not in range(1,4):#pokud je algoritmus mimo rozsah <1,3> vrati help
             help()
         for i in range(2,len(sys.argv)):
             if sys.argv[i].find("-") != -1:
@@ -196,12 +200,14 @@ match cislo_algoritmu:
     case 2:zacatek_hlaska+="miller rabin"
     case 3:zacatek_hlaska+="postupne deleni"
 zapis_debug("spoustim "+zacatek_hlaska)
-cas_Z=time.perf_counter()
-if generovat_prv: #dodelat zde se budou generovat prvocisla do daneho cisla pomoci zvoleneho algoritmu
+
+cas_Z=time.perf_counter() #spusti casovac
+
+if generovat_prv: #pokud si uzivatel zvolil generovani spusti jeden z algorimtu a bude generovat prvocisla s v rozsahu <2,x)
     match cislo_algoritmu:
         case 1:
             for cislo in cisla:
-                prvocisla = atkinovoSito(cislo)
+                prvocisla += atkinovoSito(cislo)
         case 2:
             for cislo in cisla:
                 i=2
@@ -216,9 +222,12 @@ if generovat_prv: #dodelat zde se budou generovat prvocisla do daneho cisla pomo
                     if postupneDeleni(i):
                         prvocisla.append(i)
                     i += 1
+    prvocisla=list(set(prvocisla))
 else:       #a zde se pouze overi jestli se jedna o prvocisla zase pomoci zvoleneho algoritmu
     match cislo_algoritmu:
         case 1:
+            #protoze tento algoritmus funguje na bazi sita (generuje prvocisla po nejakou hranici),
+            # tak zkontrolujeme zda posledni cislo se rovna zadanemu cislu
             for cislo in cisla:
                 seznam = atkinovoSito(cislo+1)
                 if seznam:
@@ -232,8 +241,9 @@ else:       #a zde se pouze overi jestli se jedna o prvocisla zase pomoci zvolen
             for cislo in cisla:
                 if postupneDeleni(cislo):
                     prvocisla.append(cislo)
+#ukonceni casovace a vrati cas v milisekundach
 cas_K = (time.perf_counter() - cas_Z) * 1000
-
+#zapise generovani casu
 x="generovani" if generovat_prv else "overovani"
 gen_hlaska=f"{x} trvalo:{cas_K:.2f}ms"
 print(gen_hlaska)
@@ -248,7 +258,8 @@ else:
 if not prvocisla and not generovat_prv:
     print("žádné z čísel není prvočíslo")
 
-#ulozi cas genrovani prvocisel do souboru
+#ulozi cas generovani prvocisel do souboru
+#pokud je pocet cifer vetsi nez CIFRY zapise ho ve vedeckem tvaru
 CIFRY=10
 with open("./prvocisla_cas.log", "a",encoding='utf-8') as time_log:
     operace= "generování" if generovat_prv else "ověřování"
