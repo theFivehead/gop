@@ -115,7 +115,7 @@ Program zapisuje:
 ### Diagram fungování kódu
 ![image](diagram_kod.png)
 
---
+---
 
 ## Průběh programu
 
