@@ -74,7 +74,7 @@ python gop.py [číslo_algoritmu] [čísla | -n="soubor"] [-g] [-u] [--help]
 
 ---
 
-## 🛡️ Logování a měření času
+## Logování a měření času
 
 Program zapisuje:
 - průběh do `udalosti.log`
