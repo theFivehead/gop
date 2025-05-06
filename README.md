@@ -107,6 +107,16 @@ Program zapisuje:
 
 ---
 
+## Diagramy
+
+### Diagram algoritmů
+![image](diagram_algoritmy.png)
+
+### Diagram fungování kódu
+![image](diagram_kod.png)
+
+--
+
 ## Průběh programu
 
 1. Zpracuje argumenty z příkazové řádky.
